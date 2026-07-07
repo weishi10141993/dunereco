@@ -1935,7 +1935,7 @@ void BlipAnaMC::analyze(const art::Event& evt)
                 if (it == TrackIdToParticle_P.end()) break;
                 const simb::MCParticle* cp = it->second;
 
-                if (cp->Process() == "nCapture") {
+                if (cp->Process() == "nCaptureXS") { // this name changed from G4 11.2 (nCapture) to G4 11.4 (nCaptureXS)
                     // cp is the deexcitation gamma created by nCapture.
                     // The capture occurred at the neutron's (cp's mother's) endpoint.
                     // Check that the neutron ended (was captured) in LAr.
@@ -1983,7 +1983,7 @@ void BlipAnaMC::analyze(const art::Event& evt)
         fData->ophit_bt[i] = -88; // No track SDP matching found
       }
 
-      std::cout << "DEBUG: ophit #" << i << " trackID = " << trackID <<  " ancestorID = " << ancestorTrkID<< " gen process:" << fData->ophit_bt[i] << " channel: " << fData->ophit_opchannel[i] << " PE: " << fData->ophit_pe[i] << " time: " << fData->ophit_peak_time[i] << " us "<< std::endl;
+      //std::cout << "DEBUG: ophit #" << i << " trackID = " << trackID <<  " ancestorID = " << ancestorTrkID<< " gen process:" << fData->ophit_bt[i] << " channel: " << fData->ophit_opchannel[i] << " PE: " << fData->ophit_pe[i] << " time: " << fData->ophit_peak_time[i] << " us "<< std::endl;
 
     } // end loop ophit
   } // end if else no ophit
@@ -2379,7 +2379,7 @@ void BlipAnaMC::analyze(const art::Event& evt)
             if (it == TrackIdToParticle_P.end()) break;
             const simb::MCParticle* cp = it->second;
 
-            if (cp->Process() == "nCapture") {
+            if (cp->Process() == "nCaptureXS") { // this name changed from G4 11.2 (nCapture) to G4 11.4 (nCaptureXS)
                 // cp is the deexcitation gamma created by nCapture.
                 // The capture occurred at the neutron's (cp's mother's) endpoint.
                 // Check that the neutron ended (was captured) in LAr.
@@ -2438,7 +2438,7 @@ void BlipAnaMC::analyze(const art::Event& evt)
       int pdg = p->PdgCode();
       geo::Point_t point{ p->EndX(), p->EndY(), p->EndZ() };
       std::string endmaterialName = geo->MaterialName(point);
-      //std::cout << "DEBUG:  blip truth particle pdg: " << pdg << ", process: " << pr << ", endprocess: " << endpr << " in material: " << endmaterialName << " gen process: " << fData->blip_bt[i] << std::endl;
+      std::cout << "DEBUG:  blip truth particle pdg: " << pdg << ", process: " << pr << ", endprocess: " << endpr << " in material: " << endmaterialName << " gen process: " << fData->blip_bt[i] << std::endl;
 
       const simb::MCParticle* mother = TrackIdToParticle_P[p->Mother()];
       if (mother != nullptr) { // protects against null, e.g. in case of primary particle, no mother..
@@ -2447,9 +2447,9 @@ void BlipAnaMC::analyze(const art::Event& evt)
         int motherpdg = mother->PdgCode();
         geo::Point_t motherpoint{ mother->EndX(), mother->EndY(), mother->EndZ() };
         std::string motherendmaterialName = geo->MaterialName(motherpoint);
-        //std::cout << "DEBUG:  blip truth particle mother pdg: " << motherpdg << ", process: " << motherpr << ", endprocess: " << motherendpr << " in material: " << motherendmaterialName << std::endl;
+        std::cout << "DEBUG:  blip truth particle mother pdg: " << motherpdg << ", process: " << motherpr << ", endprocess: " << motherendpr << " in material: " << motherendmaterialName << std::endl;
       }
-    } */
+    }*/
 
     // Fill cluster charge 2D histograms
     h_blip_charge   ->Fill(blp.Charge);

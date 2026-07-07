@@ -26,24 +26,23 @@ mrb newDev
 source <your work directory>/dunesw_v10200901d00/localProducts_larsoft_v10_20_09_01_e26_prof/setup
 
 cd srcs
-git clone https://github.com/weishi10141993/dunereco.git -b np02-vd-pns-pds-blipreco
-# the custom branch was based on dunereco v10_20_09_01d00 following the test release version for G4 11.4
+# this custom branch was based on dunereco v10_20_09_01d00 following the test release version for G4 11.4
 # ups list -aK+ dunereco
 # mrb g -t v10_20_09_01d00 dunereco
+git clone https://github.com/weishi10141993/dunereco.git -b np02-vd-pns-pds-blipreco
+mrb uc               # add source code to CMake
 
-mrb uc # if you have src code need to add to CMake
-
-cd .. # top level, above srcs
-mrbsetenv
-mrbslp    # need this to proper config and fix wirecell error
-
-setup ninja
+cd ${MRB_BUILDDIR}  
+mrbsetenv              
+setup ninja          # first time only
 mrb i --generator ninja
 
 # this finishes set up the custom dunereco for np02 pds pns analysis
+
+mrbslp               # this configure wirecell properly when running detsim fcl
 ```
 
-Copy all scripts (fcls and job scripts) and folders (mac files required for G4 neutron sim) from ```https://github.com/weishi10141993/VDPDSAna/tree/main/PNSCali/PDVD/fcl``` to ```/exp/dune/app/users/your_username>/dunesw_v10200901d00/``` directory (above srcs).
+Copy all scripts (fcls and job scripts) and folders (mac file required for G4 neutron sim) from ```https://github.com/weishi10141993/VDPDSAna/tree/main/PNSCali/PDVD/fcl``` to ```/exp/dune/app/users/your_username>/dunesw_v10200901d00/``` directory (above srcs).
 
 
 Produce sim samples
@@ -52,6 +51,7 @@ Produce sim samples
 lar -c eventdump.fcl <filename> -n 1
 # fcl dump
 fhicl-dump run_pdvd_blipana.fcl
+# ./runcode.sh
 ```
 
 Relogin:
