@@ -100,12 +100,12 @@ local frame_sink = function(name, outname, tags, digitize) {
     }, nin=1, nout=0),
 }.ret;
 
-// local dnnroi = import 'pgrapher/experiment/protodunevd/dnnroi_pp.jsonnet';
+// local dnnroi = import 'pgrapher/experiment/protodunevd/dnnroi.jsonnet';
 // local ts = {
 //     type: "TorchService",
 //     name: "dnnroi",
 //     data: {
-//         model: "dnnroi/pdvd/pipe_distill_nestedunet_6ch.ts",
+//         model: "ts-model/unet-l23-cosmic500-e50.ts",
 //         device: "gpucpu",
 //         concurrency: 1,
 //     },

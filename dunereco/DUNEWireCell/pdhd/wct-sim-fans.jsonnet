@@ -88,12 +88,12 @@ local frame_sink = function(name, outname, tags, digitize) {
     }, nin=1, nout=0),
 }.ret;
 
-// local dnnroi = import 'pgrapher/experiment/pdhd/dnnroi_pp.jsonnet';
+// local dnnroi = import 'pgrapher/experiment/pdhd/dnnroi.jsonnet';
 // local ts = {
 //     type: "TorchService",
 //     name: "dnnroi",
 //     data: {
-//         model: "dnnroi/pdhd/pipe_distill_transformer_6ch.ts",
+//         model: "ts-model/unet-l23-cosmic500-e50.ts",
 //         device: "gpucpu",
 //         concurrency: 1,
 //     },

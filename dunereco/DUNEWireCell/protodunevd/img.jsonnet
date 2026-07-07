@@ -6,13 +6,7 @@ local tools_maker = import 'pgrapher/common/tools.jsonnet';
 local tools = tools_maker(params);
 local anodes = tools.anodes;
 
-// Parameterized imaging toolbox.
-//  nthreshold: per-plane slicing activity threshold in units of channel RMS.
-//    Default 3.6 sigma.  To slice on any positive charge use 1e-6: a literal 0
-//    would trip MaskSlice's `if(threshold==0) -> default_threshold` fallback
-//    (a HIGH MicroBooNE bar), so 1e-6 is the charge>0 surrogate.
-//  output_dir: directory for the dump() cluster files ('' = current directory).
-local img_maker = function(nthreshold=[3.6, 3.6, 3.6], output_dir='') {
+local img = {
     // IFrame -> IFrame
     pre_proc :: function(anode, aname = "") {
 
@@ -113,17 +107,13 @@ local img_maker = function(nthreshold=[3.6, 3.6, 3.6], output_dir='') {
                 charge_tag: "gauss%d" % anode.data.ident,
                 error_tag: "gauss_error%d" % anode.data.ident,
                 anode: wc.tn(anode),
-                // Both 0 = MaskSlice auto-derives the window from the input
-                // frame.  PDVD readout length varies by run (6400 / 8000 /
-                // 10000 ticks); a hard max_tbin=8000 dropped the last 2000
-                // ticks of 10000-tick runs (see
-                // pdvd/docs/sp-img-readout-window-truncation.md).
                 min_tbin: 0,
-                max_tbin: 0,
+                max_tbin: 8000,
                 active_planes: active_planes,
                 masked_planes: masked_planes,
                 dummy_planes: dummy_planes,
-                nthreshold: nthreshold,
+                // nthreshold: [1e-6, 1e-6, 1e-6],
+                nthreshold: [3.6, 3.6, 3.6],
             },
         }, nin=1, nout=1, uses=[anode]),
     }.ret,
@@ -297,22 +287,19 @@ local img_maker = function(nthreshold=[3.6, 3.6, 3.6], output_dir='') {
     }.ret,
 
     dump :: function(anode, aname, drift_speed) {
-        local outname = if output_dir == '' then "clusters-apa-"+aname+".tar.gz"
-                        else output_dir+"/clusters-apa-"+aname+".tar.gz",
         local cs = g.pnode({
             type: "ClusterFileSink",
             name: "clustersink-"+aname,
             data: {
-                outname: outname,
-                format: "numpy", // json, numpy, dummy; numpy avoids the jsoncpp DOM on load (~90% of clustering live heap, see clus/docs/imgclus-optimization-log.md entry 20)
+                outname: "clusters-apa-"+aname+".tar.gz",
+                format: "json", // json, numpy, dummy
             }
         }, nin=1, nout=0),
         ret: cs
     }.ret,
 };
 
-function(output_dir='', nthreshold=[3.6, 3.6, 3.6]) {
-    local img = img_maker(nthreshold, output_dir),
+function() {
     local imgpipe (anode, multi_slicing) =
     if multi_slicing == "single"
     then g.pipeline([
@@ -352,7 +339,7 @@ function(output_dir='', nthreshold=[3.6, 3.6, 3.6]) {
             img.dump(anode, anode.name+"-ms-active", params.lar.drift_speed),
         ]),
         local masked_fork = g.pipeline([
-            img.multi_masked_2view_slicing_tiling(anode, anode.name+"-ms-masked", 1500), // was 100 (hist. 109); masked fork carries geometry only (no charge solving), coarse span cuts masked blob count/memory ~15x
+            img.multi_masked_2view_slicing_tiling(anode, anode.name+"-ms-masked", 100), // 109, 1744 (total 9592)
             img.clustering(anode, anode.name+"-ms-masked"),
             img.dump(anode, anode.name+"-ms-masked", params.lar.drift_speed),
         ]),

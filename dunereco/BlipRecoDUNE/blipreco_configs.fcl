@@ -1,0 +1,113 @@
+
+#include "calorimetry_pdune.fcl"
+#include "calorimetry_dune10kt.fcl"
+#include "calorimetry_vdcb.fcl"
+
+BEGIN_PROLOG
+
+# Settings for DUNE-FD 10kt (simulation)
+dune_blipalg:
+{
+  HitProducer:          "hitfd"       #// input recob::Hits to use for blip reconstruction
+  TrkProducer:          "pandoraTrack"  #// input recob::Tracks to use for blip reconstruction
+  GeantProducer:        "largeant"      #// input sim::MCParticles (getting true particle info)
+  SimEDepProducer:      "IonAndScint"   #// input sim::SimEnergyDeposits (getting energy/electrons deposited)
+  SimChanProducer:      "tpcrawdecoder:simpleSC" #// label for sim::SimChannels (getting drifted charge; optional)
+  MaxHitTrkLength:      5.0             #// hits in trks > this length will be vetoed [cm]
+  DoHitFiltering:       true            #// filter hits based on amp, width, RMS
+  #MinHitAmp:            [ 3, 3, 4 ]     #// min hit amp allowed
+  MinHitRMS:            [ 0, 0, 0 ]     #// min hit RMS
+  MaxWiresInCluster:    15              #// max allowable wires in a cluster
+  MaxClusterSpan:       75              #// max allowable time-ticks of a cluster
+  ClustMatchMinOverlap: 0.5             #// minimum fractional overlap to be eligible for matching
+  ClustMatchMaxTicks:   2.0             #// max extent for matching start/end time of clusters [ticks]
+  ClustMatchSigmaFact:  0.8             #// max extent for matching charge-weighted time [xRMS]
+  ClustMatchMinQRatio:  0.25            #// min allowed charge ratio of two clusters to be matched
+  ClustMatchQDiffLimit: 10e3            #// if charge-diff >, clusters are subject to QRatio cut above [e-]
+  MinMatchedPlanes:     2               #// minimum number of planes matched for 3D blip
+  PickyBlips:           false           #// require 3 planes that all intersect at ~same point
+  ApplyTrkCylinderCut:  false           #// reject blips in track cone-cylinder regions
+  CylinderRadius:       15.0            #// 3D cylinder cut radius [cm]
+  CaloPlane:            2               #// plane used for calorimetry (2=collection)
+  CalodEdx:             2.8             #// assumed dE/dx for MeV-scale recombination corrections
+  SCECorrection:        false           #// correct blips for space charge (requires known XYZ)
+  CaloAlg:             @local::dune10kt_calorimetryalgmc
+  
+  VetoBadChannels:      false            #// don't cluster hits from "bad" channels
+  BadChanProducer:      "nfspl1:badchannels" #// label for vector of bad channel IDs from signal processing
+  #BadChanFile:          "blipreco_badchannels.txt"
+  MinDeadWireGap:       0               #// min wire gap size separating cluster from a dead region
+  
+  DebugMode: true
+
+}
+
+# Settings for DUNE 10kt simulation
+dune_blipalg_dune10kt:              @local::dune_blipalg
+dune_blipalg_dune10kt.CaloAlg:      @local::dune10kt_calorimetryalgmc
+dune_blipalg_dune10kt.Detector:     "dune10kt"
+dune_blipalg_dune10kt.HitProducer:  "hitfd"
+
+# Settings for ProtoDUNE (common)
+dune_blipalg_pdune:               @local::dune_blipalg
+dune_blipalg_pdune.ClustMatchMinOverlap:  0.6
+dune_blipalg_pdune.ClustMatchMaxTicks:    1.5
+dune_blipalg_pdune.ClustMatchSigmaFact:   0.3
+dune_blipalg_pdune.ClustMatchQDiffLimit:  5e3
+dune_blipalg_pdune.DoHitFiltering:        true
+dune_blipalg_pdune.MinHitRMS:             [ 0, 0, 0 ]
+
+# Settings for ProtoDUNE-SP (data)
+dune_blipalg_pdunesp:               @local::dune_blipalg_pdune
+dune_blipalg_pdunesp.CaloAlg:       @local::pdune_sp_calorimetryalgdata
+dune_blipalg_pdunesp.Detector:      "pdunesp"
+dune_blipalg_pdunesp.HitProducer:    "hitpdune"
+dune_blipalg_pdunesp.VetoTPCs:        [ 0, 3, 4, 7, 8, 11 ] #// don't look at TPCs corresponding to non-active volumes
+dune_blipalg_pdunesp.SaveTree:      false
+# 350 V/cm
+dune_blipalg_pdunesp_350Vcm:        @local::dune_blipalg_pdunesp
+dune_blipalg_pdunesp_350Vcm.TimeOffset:    [ -0.14, 0.32, 0.0 ]
+# 650 V/cm
+dune_blipalg_pdunesp_650Vcm:        @local::dune_blipalg_pdunesp
+dune_blipalg_pdunesp_650Vcm.TimeOffset:    [ 0.67,   0.55, 0.0 ]
+
+# Settings for ProtoDUNE-SP (MC)
+dune_blipalg_pdunesp_mc:               @local::dune_blipalg_pdunesp
+dune_blipalg_pdunesp_mc.CaloAlg:       @local::pdune_sp_calorimetryalgmc
+
+# Settings for ProtoDUNE-HD
+dune_blipalg_pdunehd:               @local::dune_blipalg_pdune
+dune_blipalg_pdunehd.CaloAlg:       @local::pdhd_calorimetryalgdata
+dune_blipalg_pdunehd.Detector:      "pdunehd"
+dune_blipalg_pdunehd.HitProducer:   "hitpdune"
+dune_blipalg_pdunehd.ApplyXTicksOffset: false
+#dune_blipalg_pdunehd.TimeOffset:    [ -1.75, -0.85, 0.0 ]
+
+# Settings for ProtoDUNE-VD
+dune_blipalg_pdunevd:               @local::dune_blipalg_pdune
+dune_bilpalg_pdunevd.CaloAlg:       @local::vdcb_calorimetryalgdata
+dune_blipalg_pdunevd.Detector:      "pdunehd"
+dune_blipalg_pdunevd.Detector:      "pdunevd"
+dune_blipalg_pdunevd.TimeOffset:    [ 0.25,   0.05, 0.0 ]
+
+#=======================================
+# Track masker
+dune_trackmasker:
+{
+  module_type:        "TrackMasker"
+  HitProducer:        "hitpdune"
+  TrkProducer:        "pandoraTrack"
+  MinTrkLength:       5   # cm
+  MinTrkLengthVeto:   15  # cm
+  VetoRadius:         20  # cm
+}
+
+#========================================
+# Blip producer
+dune_blipreco:
+{
+  module_type:  "BlipRecoProducer"
+  BlipAlg:      @local::dune_blipalg
+}
+
+END_PROLOG
