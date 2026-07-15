@@ -26,10 +26,18 @@ mrb newDev
 source <your work directory>/dunesw_v10200901d00/localProducts_larsoft_v10_20_09_01_e26_prof/setup
 
 cd srcs
-# this custom branch was based on dunereco v10_20_09_01d00 following the test release version for G4 11.4
+
+# The custom dunereco branch below was based on dunereco v10_20_09_01d00 following the test release version for G4 11.4
 # ups list -aK+ dunereco
 # mrb g -t v10_20_09_01d00 dunereco
 git clone https://github.com/weishi10141993/dunereco.git -b np02-vd-pns-pds-blipreco
+
+# We need to modify larg4 to enable SetEnableNUDEX for correct capture gamma lines.
+# check dependence: ups depend dunesw v10_20_09_01d00 -q e26:prof 2>/dev/null | grep larg4
+# mrb g --tag v10_20_02_01 larg4
+# below I have forked this version larg4 and made the changes to larg4Main_module.cc:
+git clone https://github.com/weishi10141993/larg4.git --branch v10_20_02_01
+
 mrb uc               # add source code to CMake
 
 cd ${MRB_BUILDDIR}  
@@ -42,7 +50,7 @@ mrb i --generator ninja
 mrbslp               # this configure wirecell properly when running detsim fcl
 ```
 
-Copy all scripts (fcls and job scripts) and folders (mac file required for G4 neutron sim) from ```https://github.com/weishi10141993/VDPDSAna/tree/main/PNSCali/PDVD/fcl``` to ```/exp/dune/app/users/your_username>/dunesw_v10200901d00/``` directory (above srcs).
+Copy all EXCEPT the ```macros``` folder from ```https://github.com/weishi10141993/VDPDSAna/tree/main/PNSCali/PDVD/fcl``` to ```/exp/dune/app/users/your_username>/dunesw_v10200901d00/``` directory (above srcs).
 
 
 Produce sim samples
