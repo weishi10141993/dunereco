@@ -32,12 +32,6 @@ cd srcs
 # mrb g -t v10_20_09_01d00 dunereco
 git clone https://github.com/weishi10141993/dunereco.git -b np02-vd-pns-pds-blipreco
 
-# We need to modify larg4 to enable SetEnableNUDEX for correct capture gamma lines.
-# check dependence: ups depend dunesw v10_20_09_01d00 -q e26:prof 2>/dev/null | grep larg4
-# mrb g --tag v10_20_02_01 larg4
-# below I have forked this version larg4 and made the changes to larg4Main_module.cc:
-git clone https://github.com/weishi10141993/larg4.git --branch v10_20_02_01
-
 mrb uc               # add source code to CMake
 
 cd ${MRB_BUILDDIR}  
